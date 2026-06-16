@@ -1,7 +1,5 @@
 package com.tarefasAPI.service;
 
-import com.tarefasAPI.exception.TarefaJaCadastradaException;
-import com.tarefasAPI.exception.TarefaNotFoundException;
 import com.tarefasAPI.model.StatusTarefa;
 import com.tarefasAPI.model.Tarefa;
 import com.tarefasAPI.repository.TarefaRepository;
@@ -9,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -21,18 +20,13 @@ public class TarefaService {
     }
 
     public Tarefa criar(Tarefa tarefa) {
-        if (tarefaRepository.existsByTitulo(tarefa.getTitulo())) {
-            throw new TarefaJaCadastradaException(tarefa.getTitulo());
-        }
         tarefa.setStatus(StatusTarefa.PENDENTE);
-        tarefa.setDataConclusao(null);
-
         return tarefaRepository.save(tarefa);
     }
 
     public Tarefa atualizar(Long id, Tarefa tarefa) {
         Tarefa tarefaExist = tarefaRepository.findById(id)
-                .orElseThrow(() -> new TarefaNotFoundException(id));
+                .orElseThrow(() -> new RuntimeException("Tarefa não encontrada"));
 
         tarefaExist.setTitulo(tarefa.getTitulo());
         tarefaExist.setDescricao(tarefa.getDescricao());
@@ -45,35 +39,38 @@ public class TarefaService {
 
     public Tarefa buscarPorId(Long id) {
         return tarefaRepository.findById(id)
-                .orElseThrow(() -> new TarefaNotFoundException(id));
+                .orElseThrow(() -> new RuntimeException("Tarefa não encontrada"));
     }
 
     public void deletar(Long id) {
         tarefaRepository.findById(id)
-                .orElseThrow(() -> new TarefaNotFoundException(id));
+                .orElseThrow(() -> new RuntimeException("Tarefa não encontrada"));
 
         tarefaRepository.deleteById(id);
     }
 
     public Tarefa concluir(Long id) {
         Tarefa tarefa = buscarPorId(id);
-
-        tarefa.setStatus(StatusTarefa.CONCLUIDA);
+        tarefa.setStatus(validarTarefa("CONCLUIDA"));
         tarefa.setDataConclusao(LocalDate.now());
 
         return tarefaRepository.save(tarefa);
+    }
+
+    public StatusTarefa validarTarefa(String status) {
+        return Arrays.stream(StatusTarefa.values())
+                .filter(s -> s.name().equalsIgnoreCase(status))
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("Status não reconhecido: " + status));
     }
 
     public Tarefa reabrir(Long id) {
         Tarefa tarefa = buscarPorId(id);
 
         if (tarefa.getStatus() == StatusTarefa.PENDENTE) {
-            throw new IllegalStateException("Uma tarefa que já está PENDENTE não pode ser reaberta.");
+            throw new RuntimeException("Uma tarefa que já está PENDENTE não pode ser reaberta.");
         }
-
         tarefa.setStatus(StatusTarefa.REABERTA);
-        tarefa.setDataConclusao(null);
-
         return tarefaRepository.save(tarefa);
     }
 }

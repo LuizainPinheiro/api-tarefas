@@ -6,5 +6,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface TarefaRepository extends JpaRepository<Tarefa, Long> {
+    boolean existsByID(Long id);
     boolean existsByTitulo(String titulo);
 }

@@ -50,6 +50,7 @@ public class TarefaController {
         return ResponseEntity.ok(tarefaConcluida);
     }
 
+
     @PatchMapping("/{id}/reabrir")
     public ResponseEntity<Tarefa> reabrir(@PathVariable Long id) {
         Tarefa tarefaReaberta = tarefaService.reabrir(id);

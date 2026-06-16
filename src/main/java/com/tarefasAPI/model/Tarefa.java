@@ -1,7 +1,6 @@
 package com.tarefasAPI.model;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -21,12 +20,12 @@ public class Tarefa {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank(message = "O título é obrigatório")
+    @NotNull
     private String titulo;
 
     private String descricao;
 
-    @NotNull(message = "O status é obrigatório")
+    @NotNull
     @Enumerated(EnumType.STRING)
     private StatusTarefa status = StatusTarefa.PENDENTE;
 
